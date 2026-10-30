@@ -11,10 +11,10 @@
       "date": "2026-06-12",
       "category": "hvac",
       "issue": "Air conditioning unit blowing lukewarm air",
-      "contractor": "Apex Air Specialists",
-      "action_taken": "Recharged refrigerant R-410A and tightened loose compressor valve",
-      "cost": "$220",
-      "outcome": "Resolved temporarily. Technician noted unit is over 8 years old."
+      "contractor": "Apex Mechanical Specialists",
+      "action_taken": "Recharged refrigerant R-410A and tightened loose compressor service valve",
+      "cost": "$240",
+      "outcome": "Resolved temporarily. Technician noted unit is over 7 years old."
     },
     {
       "id": "WO-HIST-102",
@@ -22,10 +22,10 @@
       "date": "2026-08-20",
       "category": "hvac",
       "issue": "Air conditioning AC stopped cooling again and humming loudly",
-      "contractor": "Apex Air Specialists",
-      "action_taken": "Replaced run capacitor and cleared drain line blockage",
-      "cost": "$185",
-      "outcome": "Unit functioning, but compressor shows intermittent electrical strain."
+      "contractor": "Apex Mechanical Specialists",
+      "action_taken": "Replaced 45/5 MFD dual run capacitor and flushed condensate line",
+      "cost": "$210",
+      "outcome": "Unit functioning, but compressor motor shows persistent intermittent electrical strain."
     },
     {
       "id": "WO-HIST-103",
@@ -33,21 +33,21 @@
       "date": "2026-03-05",
       "category": "plumbing",
       "issue": "Kitchen sink faucet slow drip",
-      "contractor": "Reliable Pipe Co.",
-      "action_taken": "Replaced internal rubber washer and aerator",
-      "cost": "$85",
-      "outcome": "Fully resolved, no leaks."
+      "contractor": "Vanguard Plumbing Co.",
+      "action_taken": "Replaced internal ceramic disc cartridge and aerator mesh",
+      "cost": "$115",
+      "outcome": "Fully resolved, zero leak detected on pressure test."
     },
     {
       "id": "WO-HIST-104",
       "flat_number": "12A",
       "date": "2026-05-14",
       "category": "electrical",
-      "issue": "Circuit breaker tripping when oven and microwave run simultaneously",
-      "contractor": "VoltTech Electrical",
-      "action_taken": "Replaced 15A dual breaker with 20A dedicated kitchen branch line",
-      "cost": "$310",
-      "outcome": "Circuit balanced and tested. Operating under normal load."
+      "issue": "Circuit breaker tripping when kitchen appliances run simultaneously",
+      "contractor": "MetroPoint Electric",
+      "action_taken": "Installed 20A dedicated kitchen branch circuit breaker and load-balanced panel",
+      "cost": "$320",
+      "outcome": "Circuit balanced and tested. Operating under standard amp draw."
     },
     {
       "id": "WO-HIST-105",
@@ -55,11 +55,10 @@
       "date": "2026-07-22",
       "category": "plumbing",
       "issue": "Bathroom ceiling damp stain",
-      "contractor": "Reliable Pipe Co.",
-      "action_taken": "Resealed upper unit 8C bathtub silicone caulking",
-      "cost": "$140",
-      "outcome": "Moisture dried out, painted with stain blocker."
+      "contractor": "Vanguard Plumbing Co.",
+      "action_taken": "Resealed upper unit 8C bathtub perimeter flange and applied antimicrobial stain barrier",
+      "cost": "$165",
+      "outcome": "Moisture dried out, painted with stain blocker. Recommended monitoring upper waste line."
     }
   ]
 }
-

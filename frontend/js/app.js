@@ -1,31 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real Estate AI Maintenance Operations Hub</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body {
-      background-color: #f8fafc;
-      color: #0f172a;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-    .badge-emergency { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .badge-urgent { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
-    .badge-routine { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-900 min-h-screen antialiased flex flex-col">
-  <div id="root" class="flex-1 flex flex-col min-h-screen"></div>
-
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+const { useState, useEffect } = React;
 
     function App() {
       const [activeAgent, setActiveAgent] = useState("operations"); 
@@ -1385,7 +1358,4 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
-</body>
-</html>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);

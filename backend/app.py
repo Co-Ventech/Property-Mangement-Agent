@@ -1,5 +1,5 @@
 import streamlit as st
-from triage import triage, save
+from backend.triage import triage, save
 
 st.title("RE-01 Maintenance Triage")
 st.caption("Free Gemini tier sends request text to Google. Do not enter sensitive data unless approved.")
