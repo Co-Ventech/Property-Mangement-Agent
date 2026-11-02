@@ -1,185 +1,210 @@
-# Real Estate AI Maintenance Operations Hub
-> **Autonomous Multi-Agent Facilities Triage, History Investigation & Dispatch Operations Platform**
+# Real Estate Operations Hub (v3.0.0)
 
-[![Runtime: Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Pattern: MVC Architecture](https://img.shields.io/badge/Architecture-MVC_%2B_Services-blue?logo=fastapi&logoColor=white)](#mvc-architectural-design-pattern)
-[![Backend: FastAPI + Uvicorn](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Frontend: React + Tailwind CSS](https://img.shields.io/badge/Frontend-React_+_Tailwind-38B2AC?logo=react&logoColor=white)](https://react.dev/)
-[![Database: Supabase Postgres + SQLite Fallback](https://img.shields.io/badge/Database-Supabase_+_SQLite-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
-[![Security: Zero Credential Exposure Guaranteed](https://img.shields.io/badge/Security-Zero_Secrets_Committed-brightgreen)](#security--secret-protection)
+An enterprise-grade, dual-role Property Management & Resident Portal built with **FastAPI**, **React + Vite + TypeScript**, **Tailwind CSS**, and **Supabase PostgreSQL**.
 
 ---
 
-## 📖 Executive Summary
+## 1. System Architecture & Design Pattern
 
-The **Real Estate AI Maintenance Operations Hub** is an enterprise-grade multi-agent platform designed to automate end-to-end property maintenance operations:
+The application implements a clean, layered **MVC / Router-Service-Repository** pattern:
 
-1. **Resident Self-Service Portal**: Clean, accessible form where residents submit maintenance issues, upload photographic evidence, and receive tracking references without internal priority or score exposure.
-2. **Deterministic Safety Guard**: Scans incoming text instantly for life-safety hazards (`gas leak`, `fire`, `smoke`, `flood`, `burst pipe`, `carbon monoxide`, `sewage`) and enforces deterministic Emergency elevation before model inference.
-3. **Multi-Agent Collaborative Triage**:
-   - **Agent 1 (Intake Analyst)**: Extracts physical symptoms, determines trade specialty (Plumbing, Electrical, HVAC, Appliance, Structural), and identifies missing diagnostic parameters.
-   - **Agent 2 (History Investigator)**: Queries past work order records for the specific property unit, flagging recurring component failures (e.g., chronic HVAC capacitor/compressor burnout).
-   - **Agent 3, 4 & 5 (Dispatch Agents)**: Formulates targeted, ready-to-send work orders across **Email**, **SMS**, and **WhatsApp**.
-4. **Operations Supervisor Dashboard**: Complete registry with real-time urgency/status filters, rich metric cards, slide-out detailed inspection drawer, and one-click dispatch triggers.
+```text
+[ React 18 + Vite + TypeScript SPA ]
+               │  (JWT Bearer Auth)
+               ▼
+   [ FastAPI Router Layer ] (HTTP & Role Gating: /auth, /admin, /tenant)
+               │
+               ▼
+   [ Service Layer ] (Triage Engine, Notifier, Recurrence Math, Storage)
+               │
+               ▼
+   [ Repository Layer ] (Data Access & Query Logic)
+               │
+               ▼
+   [ Supabase PostgreSQL & Storage ]
+```
+
+### Key Architectural Pillars:
+- **Pure Supabase PostgreSQL**: Architected on clean Supabase relational tables and native authentication.
+- **Strict Role Isolation**: Admin (`admin`) and Tenant (`tenant`) accounts authenticate via cryptographically secure JWTs (`PyJWT`) with passwords hashed using Python's standard library `hashlib.scrypt`.
+- **Tenant Data Boundary**: Every tenant endpoint automatically filters records by the authenticated `user_id` from the JWT claim—preventing unauthorized horizontal privilege escalation.
+- **Deterministic Life-Safety Shield**: Deterministic keyword regex overrides AI scoring for immediate life hazards (gas leaks, sparks, smoke, flooding) forcing Priority Emergency / Severity 5, paired with single-pass Gemini structured triage and resilient offline fallback.
+- **Simulated Multi-Channel Notifications**: SMS, WhatsApp, and Email notices are logged with status `simulated` into a relational audit table with zero third-party telecom costs.
 
 ---
 
-## 🏛️ Clean Repository & MVC Structure
-
-The repository maintains a clean separation: the **`frontend/`** folder contains the dedicated HTML, CSS, and React JavaScript modules, the **`backend/`** folder houses the Python API, database services, and AI agents, and the root folder holds only universal project files:
+## 2. Directory Structure & File Map
 
 ```text
 Real Estate CrewAI/
-├── .env.example                     # Universal configuration template
-├── .gitignore                       # Global git exclusion rules
-├── README.md                        # Complete system documentation
-├── requirements.txt                 # Python dependencies
-├── start.bat                        # Windows 1-click launcher
-├── start.sh                         # Linux/macOS 1-click launcher
-├── supabase_schema.sql              # Supabase PostgreSQL schema
-│
-├── frontend/                        # DEDICATED FRONTEND DIRECTORY (VIEW)
-│   ├── index.html                   # HTML5 shell & asset links
-│   ├── css/
-│   │   └── styles.css               # Dedicated CSS styles & badge definitions
-│   └── js/
-│       └── app.js                   # Dedicated React 18 application component
-│
-└── backend/                         # DEDICATED BACKEND DIRECTORY (MVC)
-    ├── config/                      # CONFIG: Settings & provider policies
-    │   └── settings.py              # Environment variables, DB paths, and keys
-    │
-    ├── models/                      # MODEL (M): Data schemas & domain entities
-    │   └── ticket.py                # Pydantic schemas (Ticket, MultiAgentAnalysis, etc.)
-    │
-    ├── controllers/                 # CONTROLLER (C): Route handlers
-    │   ├── ticket_controller.py     # Request validation, triage, and ticket CRUD
-    │   └── operations_controller.py # Dynamic prompt adjustments & dispatching
-    │
-    ├── services/                    # SERVICES: Heavy business logic
-    │   ├── database_service.py      # Hybrid Supabase cloud sync + SQLite
-    │   ├── multi_agent_service.py   # 3-Tier AI agents & safety shield
-    │   └── agent_config_service.py  # System prompt settings & 24-mo repair logs
-    │
-    ├── uploads/                     # Storage for resident evidence photos (.gitkeep)
-    ├── agent_config.json            # Dynamic runtime agent system prompts
-    ├── historical_records.json      # Unit historical repair logbook
-    ├── seed_data.py                 # Realistic demo data populator
-    ├── generate_docs_pdf.py         # Executive PDF report builder
-    └── main.py                      # Main Application Router & Entry Point
+├── backend/
+│   ├── app/
+│   │   ├── core/
+│   │   │   ├── config.py         # Typed environment settings (.env)
+│   │   │   ├── security.py       # hashlib.scrypt hashing + PyJWT encode/decode
+│   │   │   └── deps.py           # FastAPI dependencies (get_current_user, require_admin, require_tenant)
+│   │   ├── db/
+│   │   │   └── client.py         # Singleton Supabase PostgreSQL client
+│   │   ├── schemas/              # Pydantic request & response models
+│   │   │   ├── auth.py           # LoginRequest, TokenResponse, ChangePasswordRequest
+│   │   │   ├── tickets.py        # TicketCreateRequest, TicketUpdateRequest, TicketResponse
+│   │   │   ├── contractors.py    # ContractorCreate, PaymentCreate, BookAppointmentRequest
+│   │   │   ├── visits.py         # ManualVisitCreate, ScheduledVisitCreate, VisitResponse
+│   │   │   ├── units.py          # UnitCreate, UnitResponse
+│   │   │   ├── tenants.py        # TenantCreate, TenantResponse, LeaseResponse
+│   │   │   └── notifications.py  # NotificationResponse, PromptSettingUpdate
+│   │   ├── repositories/         # Direct Supabase table access operations
+│   │   │   ├── users_repo.py     # User lookups, creation, password updates
+│   │   │   ├── units_repo.py     # Units and leases queries
+│   │   │   ├── tickets_repo.py   # Ticket filtering, joins with units/contractors/tenants
+│   │   │   ├── contractors_repo.py # Directory, payments ledger, resolved work orders
+│   │   │   ├── visits_repo.py    # Manual and recurring visit records
+│   │   │   └── notifications_repo.py # Audit logger for SMS, WhatsApp & Email
+│   │   ├── services/             # Pure business logic
+│   │   │   ├── triage_service.py # Deterministic safety shield + Gemini AI classification
+│   │   │   ├── recurrence_service.py # dateutil.relativedelta recurrence calculations
+│   │   │   ├── notifier_service.py   # Multi-channel simulated alert formatting
+│   │   │   └── storage_service.py    # Supabase private bucket storage & signed URLs
+│   │   ├── routers/              # Thin HTTP endpoint controllers
+│   │   │   ├── auth.py           # /auth/login, /auth/me, /auth/change-password
+│   │   │   ├── admin_tickets.py  # Ticket queue, filtering, slide-out drawer details
+│   │   │   ├── admin_contractors.py # Directory, payments ledger, appointment booking
+│   │   │   ├── admin_visits.py   # Manual and scheduled recurring visits management
+│   │   │   ├── admin_tenants.py  # Units and resident lease management
+│   │   │   ├── admin_settings.py # Notification logs and multi-agent prompt editor
+│   │   │   └── tenant_portal.py  # Resident dashboard, ticket timeline, apartment & rent
+│   │   └── main.py               # FastAPI application factory, CORS, SPA static serving
+│   ├── scripts/
+│   │   └── seed.py               # Seeds admin, units, contractors, tenants, leases, tickets
+│   ├── tests/
+│   │   ├── test_security.py      # Unit tests for scrypt hashing and JWT validity
+│   │   ├── test_recurrence.py    # Unit tests for bi-monthly and annual visit math
+│   │   └── test_triage.py        # Unit tests for safety hazard emergency overrides
+│   └── main.py                   # CLI entrypoint (python backend/main.py)
+├── frontend/                     # Modern React + Vite + TypeScript Single Page App
+│   ├── src/
+│   │   ├── api/client.ts         # Typed fetch client with JWT Bearer auto-injection
+│   │   ├── context/AuthContext.tsx # Centralized auth state, login/logout, session persistence
+│   │   ├── components/
+│   │   │   ├── ProtectedRoute.tsx # Role-gated route enforcement (Admin vs Tenant)
+│   │   │   ├── Badge.tsx         # Urgency, Status, and Severity dot indicators
+│   │   │   └── Modal.tsx         # Reusable modal container
+│   │   ├── layouts/
+│   │   │   ├── AdminLayout.tsx   # Sidebar nav (Overview, Tickets, Contractors, Visits, etc.)
+│   │   │   └── TenantLayout.tsx  # Resident topbar and tabbed navigation
+│   │   ├── pages/
+│   │   │   ├── Login.tsx         # Dual-login page with quick-fill credential helpers
+│   │   │   ├── admin/
+│   │   │   │   ├── AdminOverview.tsx     # Operations KPI center & priority issues
+│   │   │   │   ├── TicketsQueue.tsx      # Dense enterprise table with multi-filter bar
+│   │   │   │   ├── TicketDrawer.tsx      # Slide-out drawer with past unit tickets & actions
+│   │   │   │   ├── ContractorsList.tsx   # Trades directory (Carpentry, Plumbing, HVAC...)
+│   │   │   │   ├── ContractorDetail.tsx  # Profile, past issues, payments ledger & booking
+│   │   │   │   ├── VisitsManager.tsx     # Calendar of manual visits & recurring schedules
+│   │   │   │   ├── TenantsManager.tsx    # Unit & resident lease onboarding
+│   │   │   │   ├── NotificationsLog.tsx  # Audit trail of simulated dispatches
+│   │   │   │   └── AgentSettings.tsx     # Configurable multi-agent prompt editor
+│   │   │   └── tenant/
+│   │   │       ├── TenantDashboard.tsx   # Resident overview, active requests, rent due
+│   │   │       ├── TenantTickets.tsx     # Request tracking with visual lifecycle timeline
+│   │   │       ├── ApartmentDetails.tsx  # Unit specs & verified lease PDF downloads
+│   │   │       ├── TenantVisits.tsx      # Both manual and recurring visits visibility
+│   │   │       ├── TenantRent.tsx        # Rent statement, due date, auto-debit status
+│   │   │       └── TenantSettings.tsx    # Password reset & notification preferences
+│   │   ├── App.tsx               # Master route configuration
+│   │   └── types.ts              # TypeScript interfaces
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── supabase/
+│   └── schema.sql                # Complete 11-table PostgreSQL relational schema & RLS
+├── docs/
+│   └── generate_docs_pdf.py      # Automated executive PDF documentation generator
+├── .env.example                  # Environment configuration template
+├── requirements.txt              # Production Python package manifest
+├── start.bat                     # Windows 1-click startup launcher
+└── start.sh                      # Unix/macOS 1-click startup launcher
 ```
 
 ---
 
-## 🛠️ Complete Setup Guide
+## 3. Database Setup (Supabase PostgreSQL)
 
-### Prerequisites
-- **Python 3.10+** installed ([python.org](https://www.python.org/downloads/))
-- **Git** installed ([git-scm.com](https://git-scm.com/))
-- *(Optional)* [Google Gemini API Key](https://aistudio.google.com/) for live LLM reasoning
-- *(Optional)* [Supabase Account](https://supabase.com/) for cloud PostgreSQL sync
+1. Open your Supabase Dashboard -> **SQL Editor**.
+2. Open [supabase/schema.sql](file:///c:/Users/dell/Desktop/Real%20Estate%20CrewAI/supabase/schema.sql) and paste its entire contents into the SQL Editor, then click **Run**.
+   - This creates 11 relational tables: `users`, `units`, `leases`, `documents`, `contractors`, `contractor_payments`, `tickets`, `visits`, `rent_payments`, `notifications`, `settings`.
+   - All performance indexes, foreign keys, and Row Level Security policies are automatically configured.
+3. Seed sample demo data:
+   ```bash
+   python backend/scripts/seed.py
+   ```
 
 ---
 
-### Step 1: Clone the Repository
+## 4. Quick Start & Credentials
 
+### One-Click Launch (Windows)
+Double-click `start.bat` or run:
+```powershell
+.\start.bat
+```
+
+### Manual Command
 ```bash
-git clone <repository_url>
-cd "Real Estate CrewAI"
+python -m uvicorn backend.app.main:app --port 8000 --host 127.0.0.1
 ```
+Open **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** in your browser.
+
+### Pre-Configured Test Accounts
+
+| Role | Email | Password | Scope & Access |
+|---|---|---|---|
+| **Property Manager (Admin)** | `admin@realestate.com` | `Admin12345!` | Full portfolio oversight, tickets queue, contractor directory & ledger, manual & recurring visit scheduling, tenant onboarding, agent prompts |
+| **Resident Tenant (Unit 4B)** | `johnny@cashmusic.com` | `Tenant12345!` | Personal dashboard, request tracking timeline, Unit 4B details & lease PDFs, recurring inspections, rent payment ledger, password reset |
+| **Resident Tenant (Unit 12A)** | `sarah.connor@skyline.org` | `Tenant12345!` | Personal dashboard for Unit 12A, request tracking timeline, annual inspection visibility, rent ledger |
+
+*(On the login screen, convenient one-click pills allow instant credential autofill for smooth Loom video demonstrations.)*
 
 ---
 
-### Step 2: Configure Environment Variables
+## 5. Feature Highlights
 
+### A. Dedicated Contractor Directory & Ledger
+- Dedicated navigation item in the admin sidebar.
+- Filter contractors by trade: **Carpentry**, **Plumbing**, **Electrical**, **HVAC**, **Appliance**, **Roofing**.
+- Detailed Contractor Profile:
+  - Hourly billing rate ($/hr) and contact coordinates.
+  - **Past Issues Fixed**: Complete list of resolved work orders associated with the contractor.
+  - **Payments Ledger**: History of payments, check/memo references, and total paid to date.
+  - **Book Appointment Action**: Book appointment with simulated SMS, WhatsApp, and Email dispatch notifications sent to both the contractor and the unit's resident.
+
+### B. Two-Option Visit Scheduling
+When reviewing an issue or unit, Property Managers have two visit actions:
+1. **Manual Visit**: Scheduled for a specific date/time (defaulting to tomorrow morning). Automatically logs simulated SMS, WhatsApp, and Email alerts to the resident.
+2. **Scheduled Recurring Visit**: Configured with a recurring interval (e.g. *once every 2 months* for filter changes or *every 12 months* for annual fire safety audits). Computed dynamically via `dateutil.relativedelta` and displayed in the tenant's portal.
+
+### C. Tenant Portal Experience
+- **Interactive Lifecycle Timeline**: Tracks each request across 5 stages: *Logged* -> *AI Triaged* -> *Technician Dispatched* -> *In Progress* -> *Resolved*.
+- **Apartment & Verified Lease Documents**: View unit layout, monthly rent, and download lease documents.
+- **Rent Statements & Due Reminders**: Transparent ledger of paid and upcoming monthly rent payments.
+- **Resident Settings**: In-portal password update and notification preference controls.
+
+### D. Multi-Agent AI Triage & Safety Shield
+- Deterministic regex scans incoming text for immediate life-safety hazards (`gas leak`, `fire`, `smoke`, `sparking`, `flood`, `burst pipe`, `carbon monoxide`, `sewage`).
+- Immediate life hazards bypass normal heuristics and force **Emergency Priority (Severity 5)** with emergency protocol action items.
+- Routine requests are triaged into equipment categories with estimated cost brackets and synthesized historical work order context.
+
+---
+
+## 6. Verification & Automated Tests
+
+Run the backend unit test suite:
 ```bash
-# On Windows PowerShell:
-Copy-Item .env.example .env
-
-# On Linux / macOS:
-cp .env.example .env
+python -m unittest discover -s backend/tests -p "test_*.py"
 ```
-
-Open `.env` in any text editor. The default settings run out-of-the-box in **local offline mode** without requiring any paid accounts:
-
-```dotenv
-LLM_PROVIDER=gemini
-LLM_MODEL=gemini-2.0-flash
-LLM_API_KEY=your_gemini_api_key_here
-ALLOW_PAID_SERVICES=false
-
-# Supabase Storage & Database Integration (Optional)
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_KEY=your-supabase-anon-or-service-role-key
-
-PORT=8000
-HOST=127.0.0.1
-```
-
----
-
-### Step 3: Install Dependencies
-
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-
-# Linux / macOS
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
----
-
-### Step 4: Seed Demo Data (Optional but Recommended)
-
-Populate the database with pre-configured, realistic multi-urgency maintenance tickets:
-
-```bash
-python backend/seed_data.py
-```
-
----
-
-### Step 5: Launch the Application
-
-#### Option A: One-Click Launchers
-- **Windows**: Double-click `start.bat` or run:
-  ```cmd
-  start.bat
-  ```
-- **macOS / Linux**:
-  ```bash
-  chmod +x start.sh
-  ./start.sh
-  ```
-
-#### Option B: Direct Python Command
-```bash
-python -m uvicorn backend.main:app --port 8000 --host 127.0.0.1
-```
-
----
-
-### Step 6: Access the Hub
-
-Open your browser to:
-👉 **[http://127.0.0.1:8000/dashboard/](http://127.0.0.1:8000/dashboard/)**
-
-- **Resident Portal Tab**: Submit new tickets with photos (internal scores/rationale stay hidden from tenants).
-- **Operations Overview Tab**: View live KPI cards, triage recent cases, inspect AI diagnosis rationale, and review historical repair records.
-- **Maintenance Queue Tab**: Full-table registry with filter pills and slide-out inspection drawer.
-- **Agent Prompts Tab**: Customize and fine-tune live agent system instructions.
-- **Integrations Tab**: Update dispatch email, phone, and WhatsApp contractor contacts.
-
----
-
-## 🔒 Security & Secret Protection
-
-- **No Secrets in Source Control**: Verified `.gitignore` prevents `.env`, local SQLite database files (`*.db`), test files, and uploaded evidence files from being committed.
-- **Zero Hardcoded Keys**: The application code accesses credentials exclusively through environment variables.
-- **Tenant Data Protection**: Tenant forms never display internal scoring, severity numbers, or internal operational ratings back to the resident.
-- **Free Baseline Adherence**: Deterministic fallback prevents unexpected charges or third-party paid API invocations unless explicitly authorized via `ALLOW_PAID_SERVICES=true`.
+Tests cover:
+- Cryptographic `hashlib.scrypt` password hashing and constant-time verification.
+- `PyJWT` bearer token issuance and expiration validation.
+- `dateutil.relativedelta` recurring visit calculation.
+- Safety Shield hazard regex override and deterministic fallback categorization.
